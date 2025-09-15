@@ -1,0 +1,17 @@
+{
+  "name": "PROJETO_NODE_TESTE",
+  "version": "1.0.0",
+  "description": "projeto de teste para avaliação de conhecimentos",
+  "main": "index.js",
+  "author": "Jefferson.barbosa",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.2"
+  }
+}
