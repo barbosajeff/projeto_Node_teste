@@ -6,7 +6,11 @@
   "author": "Jefferson.barbosa",
   "license": "MIT",
   "private": false,
+  "scripts": {
+    "start": "yarn ts-node-dev ./src/index.ts"
+  },
   "dependencies": {
+    "dotenv": "^17.2.2",
     "express": "^5.1.0"
   },
   "devDependencies": {
@@ -15,6 +19,7 @@
     "@eslint/json": "^0.13.2",
     "@eslint/markdown": "^7.2.0",
     "@types/express": "^5.0.3",
+    "@types/http-status-codes": "^1.2.0",
     "eslint": "^9.35.0",
     "globals": "^16.4.0",
     "jiti": "^2.5.1",
