@@ -42,29 +42,48 @@ export const createValidation = validation( {
 
 
 
-// Controller create com salary opcional
 export const create = async (req: Request<{}, {}, IUsuario>, res: Response) => {
   try {
     const { nome, email, role, salary } = req.body;
 
-    const newUser = await prisma.user.create({
-      data: {
-        name: nome,
-        email,
-        role: role ?? "USER",
-        salary: salary
-          ? {
-              create: {
-                amount: salary.amount,
-                currency: salary.currency,
-                position: salary.position,
-              },
-            }
-          : undefined,
-      },
-      include: {
-        salary: true, // retorna o salary junto
-      },
+    const newUser = await prisma.$transaction(async (tx) => {
+      // 1. Cria o usuário
+      const user = await tx.user.create({
+        data: {
+          name: nome,
+          email,
+          role: role ?? "USER",
+        },
+      });
+
+      // 2. Se salary foi enviado, cria Salary e SalaryHistory
+      if (salary) {
+        await tx.salary.create({
+          data: {
+            userId: user.id,
+            amount: salary.amount!,
+            currency: salary.currency!,
+            position: salary.position!,
+          },
+        });
+
+        await tx.salaryHistory.create({
+          data: {
+            userId: user.id,
+            amount: salary.amount!,
+            currency: salary.currency!,
+            position: salary.position!,
+            effectiveFrom: new Date(),
+            isCurrent: true,
+          },
+        });
+      }
+
+      // 3. Retorna usuário criado com salário incluso (se houver)
+      return tx.user.findUnique({
+        where: { id: user.id },
+        include: { salary: true },
+      });
     });
 
     return res.status(201).json(newUser);

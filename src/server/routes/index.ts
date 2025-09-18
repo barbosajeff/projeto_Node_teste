@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { StatusCodes} from 'http-status-codes';
-import {UsersController, SalaryController} from  './../controller';
+import {UsersController, SalaryController, HistoricSalaryController} from  './../controller';
 
 
 const router =   Router ();
@@ -27,6 +27,10 @@ router.delete('/users/:id', UsersController.deleteUser);
 router.put('/salary/:id', SalaryController.updateSalary);
 router.delete('/salary/:id', SalaryController.deleteSalaty);
 router.get('/salary/:id', SalaryController.getSalary);
+
+/**Router de Historico de Salarios */
+
+router.get('/salaryHistoric/:id',HistoricSalaryController.getSalarys)
 
 
 export {router};

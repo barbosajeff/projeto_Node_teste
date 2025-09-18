@@ -1,12 +1,7 @@
 import { prisma } from "../../../index";
-import { Request, RequestHandler, Response } from "express";
+import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as yup from 'yup';
-
-
-
-
-
 
 interface ISalary {
   amount: number;
@@ -14,73 +9,94 @@ interface ISalary {
   position: string;
 }
 
-
-
-const salaryValidation  =  yup.object ({
-
-    amount : yup
-        .number().typeError('O campo deve ser numerico')
-        .positive('O salário deve ser maior que zero')
-        .required('O campo é obrigatório'),
-    currency : yup
-        .string()
-        .required('O campo é obrigatório')
-        .length(3,'"A moeda deve ter exatamente 3 caracteres (ex: BRL, USD)'),
-    position : yup
-        .string()
-        .required('O campo é obrigatório')
-        .min(2,'A posição deve ter pelo menos 2 caracteres'),
+const salaryValidation = yup.object({
+  amount: yup
+    .number().typeError('O campo deve ser numerico')
+    .positive('O salário deve ser maior que zero')
+    .required('O campo é obrigatório'),
+  currency: yup
+    .string()
+    .required('O campo é obrigatório')
+    .length(3,'"A moeda deve ter exatamente 3 caracteres (ex: BRL, USD)'),
+  position: yup
+    .string()
+    .required('O campo é obrigatório')
+    .min(2,'A posição deve ter pelo menos 2 caracteres'),
 });
 
+export const updateSalary = async (
+  req: Request<{ id: string }, {}, ISalary>,
+  res: Response
+) => {
+  const { id } = req.params;
+  const { amount, currency, position } = req.body;
 
-export const updateSalaryValidation : RequestHandler = async (req, res, next) =>{
+  // Verifica se o usuário existe
+  const user = await prisma.user.findUnique({
+    where: { id: Number(id) },
+  });
 
-    try {
-        
-        await salaryValidation.validate (req.body, {abortEarly: false});
-        return next();
+  if (!user) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: "Usuário não encontrado" });
+  }
 
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // Verifica se já existe salário
+      const existingSalary = await tx.salary.findUnique({
+        where: { userId: Number(id) },
+      });
 
-    } catch (error) {
-        
-        if (error instanceof yup.ValidationError){
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                 errors : error.errors
-            });
-        }
+      if (!existingSalary) {
+        // Caso não exista salário -> cria salário e histórico inicial
+        const salary = await tx.salary.create({
+          data: { amount, currency, position, userId: Number(id) },
+        });
 
-        console.error(error);
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Erro ao salvar salário" });
+        await tx.salaryHistory.create({
+          data: {
+            userId: Number(id),
+            amount,
+            currency,
+            position,
+            effectiveFrom: new Date(),
+            isCurrent: true,
+          },
+        });
 
-    }
+        return salary;
+      }
 
-};
+      // Atualiza o salário atual
+      const updatedSalary = await tx.salary.update({
+        where: { userId: Number(id) },
+        data: { amount, currency, position },
+      });
 
+      // Fecha o histórico atual
+      await tx.salaryHistory.updateMany({
+        where: { userId: Number(id), isCurrent: true },
+        data: { effectiveTo: new Date(), isCurrent: false },
+      });
 
-export const updateSalary =  async ( req: Request<{id : string}, {}, ISalary>, res:Response) => {
+      // Cria novo histórico
+      await tx.salaryHistory.create({
+        data: {
+          userId: Number(id),
+          amount,
+          currency,
+          position,
+          effectiveFrom: new Date(),
+          isCurrent: true,
+        },
+      });
 
-    const { id } = req.params;
-    const { amount, currency, position } = req.body;
-
-    // Verifica se o usuário existe
-    const user = await prisma.user.findUnique({
-      where: { id: Number(id) },
+      return updatedSalary;
     });
 
-    if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: "Usuário não encontrado" });
-    }
-
-    // Cria ou atualiza salário (1:1)
-    const salary = await prisma.salary.upsert({
-      where: { userId: Number(id) },
-      update: { amount, currency, position },
-      create: { amount, currency, position, userId: Number(id) },
-    });
-
-    return res.status(StatusCodes.ACCEPTED).json(salary);
-
+    return res.status(StatusCodes.ACCEPTED).json(result);
+  } catch (err: any) {
+    console.error(err);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Erro ao atualizar salário" });
+  }
 };
-
-
-

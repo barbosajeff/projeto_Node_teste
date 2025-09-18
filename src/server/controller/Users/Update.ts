@@ -60,31 +60,76 @@ export const updateUser = async (
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id: Number(id) },
-      data: {
-        name: nome,
-        email,
-        role,
-        salary: salary
-          ? existingUser.salary
-            ? {
-                update: {
-                  amount: salary.amount,
-                  currency: salary.currency,
-                  position: salary.position,
-                },
-              }
-            : {
-                create: {
-                  amount: salary.amount!,
-                  currency: salary.currency!,
-                  position: salary.position!,
-                },
-              }
-          : undefined,
-      },
-      include: { salary: true },
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      // Atualiza os dados básicos do usuário
+      const user = await tx.user.update({
+        where: { id: Number(id) },
+        data: {
+          name: nome,
+          email,
+          role,
+        },
+      });
+
+      if (salary) {
+        if (existingUser.salary) {
+          // Atualiza salário existente
+          await tx.salary.update({
+            where: { userId: Number(id) },
+            data: {
+              amount: salary.amount!,
+              currency: salary.currency!,
+              position: salary.position!,
+            },
+          });
+
+          // Fecha o histórico atual
+          await tx.salaryHistory.updateMany({
+            where: { userId: Number(id), isCurrent: true },
+            data: { effectiveTo: new Date(), isCurrent: false },
+          });
+
+          // Cria novo histórico
+          await tx.salaryHistory.create({
+            data: {
+              userId: Number(id),
+              amount: salary.amount!,
+              currency: salary.currency!,
+              position: salary.position!,
+              effectiveFrom: new Date(),
+              isCurrent: true,
+            },
+          });
+        } else {
+          // Cria novo salário
+          await tx.salary.create({
+            data: {
+              userId: Number(id),
+              amount: salary.amount!,
+              currency: salary.currency!,
+              position: salary.position!,
+            },
+          });
+
+          // Cria histórico inicial
+          await tx.salaryHistory.create({
+            data: {
+              userId: Number(id),
+              amount: salary.amount!,
+              currency: salary.currency!,
+              position: salary.position!,
+              effectiveFrom: new Date(),
+              isCurrent: true,
+            },
+          });
+        }
+      }
+
+      // Retorna usuário atualizado com salário atual
+      return tx.user.findUnique({
+        where: { id: Number(id) },
+        include: { salary: true },
+      });
     });
 
     return res.json(updatedUser);
