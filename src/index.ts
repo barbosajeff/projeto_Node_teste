@@ -1,6 +1,13 @@
-import { server } from './server/server' ;
+import { server } from './server/server';
+import { PrismaClient } from '@prisma/client';
 
-server.listen(process.env.PORT || 3333, () => {
+const prisma = new PrismaClient(); 
 
-    console.log(`App rodando na porta ${ process.env.PORT }`);
+// Exporta para usar em outros lugares
+export { prisma };
+
+const PORT = process.env.PORT || 3333;
+
+server.listen(PORT, () => {
+  console.log(`🚀 App rodando na porta ${PORT}`);
 });

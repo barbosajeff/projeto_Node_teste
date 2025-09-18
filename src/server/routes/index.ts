@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { StatusCodes} from 'http-status-codes'
+import { StatusCodes} from 'http-status-codes';
+import {UsersController, SalaryController} from  './../controller';
 
 
 const router =   Router ();
@@ -10,23 +11,22 @@ router.get('/', (_, res) => {
   return res.send('ola Dev');
 });
 
-
-//Router de teste 
-router.get(
-    '/teste',
-    (req, res) => {
-
-        console.log(req.body) ;
-        return res.status(StatusCodes.UNAUTHORIZED).json(req.body)
-});
-
+/**
+ * Routes de Usuario
+ */
+router.post( '/users/',UsersController.createValidation, UsersController.create);
+router.get('/users/getAll', UsersController.listUsersValidation, UsersController.listUsers );
+router.get('/users/:id',UsersController.getUserById);
+router.put('/users/:id', UsersController.updateUser);
+router.delete('/users/:id', UsersController.deleteUser);
 
 
-
-
-
-
-
+/**
+ * Routes de Salario
+ */
+router.put('/salary/:id', SalaryController.updateSalary);
+router.delete('/salary/:id', SalaryController.deleteSalaty);
+router.get('/salary/:id', SalaryController.getSalary);
 
 
 export {router};
