@@ -16,17 +16,17 @@ router.get('/', (_, res) => {
  */
 router.post( '/users/',UsersController.createValidation, UsersController.create);
 router.get('/users/getAll', UsersController.listUsersValidation, UsersController.listUsers );
-router.get('/users/:id',UsersController.getUserById);
+router.get('/users/:id',UsersController.getBiIdValidation ,UsersController.getUserById);
 router.put('/users/:id', UsersController.updateUser);
-router.delete('/users/:id', UsersController.deleteUser);
+router.delete('/users/:id',UsersController.deleteValidation, UsersController.deleteUser);
 
 
 /**
  * Routes de Salario
  */
 router.put('/salary/:id', SalaryController.updateSalary);
-router.delete('/salary/:id', SalaryController.deleteSalaty);
-router.get('/salary/:id', SalaryController.getSalary);
+router.delete('/salary/:id',SalaryController.deleteValidation, SalaryController.deleteSalaty);
+router.get('/salary/:id',SalaryController.getBiIdValidation, SalaryController.getSalary);
 
 /**Router de Historico de Salarios */
 

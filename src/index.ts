@@ -1,9 +1,6 @@
 import { server } from './server/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './server/shared/services/prisma';
 
-const prisma = new PrismaClient(); 
-
-// Exporta para usar em outros lugares
 export { prisma };
 
 const PORT = process.env.PORT || 3333;
