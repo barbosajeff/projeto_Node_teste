@@ -1,6 +1,6 @@
 import { Request, RequestHandler, Response } from "express";
 import { StatusCodes } from "http-status-codes";
-import { prisma } from "./../../../index";
+import { prisma } from './../../../server/shared/services/prisma';
 import * as yup from 'yup';
 import { validation } from "../../shared/middlewares";
 

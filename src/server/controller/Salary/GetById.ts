@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { prisma } from "../../../index";
+import { prisma } from './../../../server/shared/services/prisma';
 import { Request,  Response } from "express";
 import { validation } from '../../shared/middlewares';
 import * as yup from 'yup';
@@ -19,7 +19,7 @@ interface IParamProps {
 export const getBiIdValidation = validation ({
 
     params: yup.object ({
-        page: yup.number().integer().required().moreThan(0),
+        id: yup.number().integer().required().moreThan(0),
 
     })
    

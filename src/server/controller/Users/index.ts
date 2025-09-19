@@ -1,5 +1,5 @@
 import * as create from './Create';
-import * as listUsers from  './ListUsers';
+import * as listUsers from  './GetAll';
 import * as getUserById from './GetUserById';
 import * as updateUser from './Update' ;
 import * as deleteUser from './Delete';

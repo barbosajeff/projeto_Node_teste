@@ -22,8 +22,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relações
-  salary   Salary?
-  histories SalaryHistory[]
+  salary   Salary?        // 1:1
+  histories SalaryHistory[]  // 1:N
 }
 
 model Salary {
@@ -35,8 +35,8 @@ model Salary {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relação 1:1 com User
-  user User @relation(fields: [userId], references: [id])
+  // Relação 1:1 com User + cascade
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SalaryHistory {
@@ -51,8 +51,8 @@ model SalaryHistory {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // Relação N:1 com User
-  user User @relation(fields: [userId], references: [id])
+  // Relação N:1 com User + cascade
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {

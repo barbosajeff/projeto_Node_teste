@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { prisma } from "../../../index";
+import { prisma } from './../../../server/shared/services/prisma';
 import { Request, Response } from "express";
 
 interface ISalary {

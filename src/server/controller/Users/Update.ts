@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prisma } from "../../../index";
+import { prisma } from './../../../server/shared/services/prisma';
 import * as yup from 'yup';
 import { validation } from "../../shared/middlewares";
 
@@ -36,7 +36,7 @@ export const updateUserValidation = validation( {
             .strict()
             .noUnknown(true, "Campos não permitidos foram enviados"),
     params: yup.object ({
-            page: yup.number().integer().required().moreThan(0),
+            id: yup.number().integer().required().moreThan(0),
     
         }),
 });
