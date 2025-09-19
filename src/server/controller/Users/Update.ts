@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from './../../../server/shared/services/prisma';
 import * as yup from 'yup';
-import { validation } from "../../shared/middlewares";
+
 
 
 interface IParamProps {
@@ -21,25 +21,6 @@ interface IUsuarioUpdate {
   salary?: ISalaryUpdate;
 }
 
-
-export const updateUserValidation = validation( {
-    body : yup .object({
-            nome: yup.string().required("O nome é obrigatório").min(3, "O nome deve ter pelo menos 3 caracteres"),
-            email: yup.string().required("O email é obrigatório").email("Formato de email inválido"),
-            role: yup.mixed<"USER" | "ADMIN">().oneOf(["USER", "ADMIN"]).default("USER").optional(),
-            salary: yup.object({ 
-                amount: yup.number().required("O valor do salário é obrigatório"),
-                currency: yup.string().required("A moeda é obrigatória"),
-                position: yup.string().required("O cargo é obrigatório"),
-                }).optional(),
-            })
-            .strict()
-            .noUnknown(true, "Campos não permitidos foram enviados"),
-    params: yup.object ({
-            id: yup.number().integer().required().moreThan(0),
-    
-        }),
-});
 
 
 export const updateUser = async (

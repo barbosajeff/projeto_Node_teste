@@ -1,6 +1,7 @@
 import { prisma } from './../../../server/shared/services/prisma';
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
+import { validation } from "../../shared/middlewares";
 import * as yup from 'yup';
 
 interface ISalary {
@@ -8,6 +9,7 @@ interface ISalary {
   currency: string;
   position: string;
 }
+
 
 const salaryValidation = yup.object({
   amount: yup
